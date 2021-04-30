@@ -1,4 +1,4 @@
-import { GetTodosActionTypes } from './types';
+import { GetTodosActionTypes, GetTodoActionTypes } from './types';
 import { Todo } from '../interface/todo';
 
 export type GetTodosRequestAction = {
@@ -24,3 +24,27 @@ export type GetTodosActions =
   | GetTodosSuccessAction
   | GetTodosFailAction
   | GetTodosResetAction;
+
+export type GetTodoRequestAction = {
+  type: GetTodoActionTypes.GET_TODO_REQUEST;
+};
+
+export type GetTodoSuccessAction = {
+  type: GetTodoActionTypes.GET_TODO_SUCCESS;
+  payload: Todo;
+};
+
+export type GetTodoFailAction = {
+  type: GetTodoActionTypes.GET_TODO_FAIL;
+  payload: { message: string };
+};
+
+export type GetTodoResettAction = {
+  type: GetTodoActionTypes.GET_TODO_RESET;
+};
+
+export type GetTodoActions =
+  | GetTodoRequestAction
+  | GetTodoSuccessAction
+  | GetTodoFailAction
+  | GetTodoResettAction;

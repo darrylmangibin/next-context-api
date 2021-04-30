@@ -4,12 +4,18 @@ import { TodoContext } from '../../context/TodoState';
 
 import TodoItem from '../../components/todos/todo-item';
 
+import { GetTodosActionTypes } from '../../context/types';
+
 const TodosPage: NextPage = () => {
   const context = useContext(TodoContext);
 
   useEffect(() => {
-    context.getTodos()
-  }, [])
+    context.getTodos();
+
+    return () => {
+      context.dispatch({ type: GetTodosActionTypes.GET_TODOS_RESET });
+    };
+  }, []);
 
   return (
     <div>

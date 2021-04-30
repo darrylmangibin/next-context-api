@@ -1,5 +1,5 @@
-import { NextPage } from 'next';
 import React from 'react';
+import { NextPage } from 'next';
 
 import TodoForm from '../../../components/todos/todo-form';
 
@@ -12,4 +12,4 @@ const EditTodoPage: NextPage = () => {
   );
 };
 
-export default EditTodoPage
+export default EditTodoPage;
