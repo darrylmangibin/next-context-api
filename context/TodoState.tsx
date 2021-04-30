@@ -1,11 +1,28 @@
 import React, { createContext, useReducer } from 'react';
-import axios from 'axios';
+import axios, { AxiosRequestConfig } from 'axios';
 
 import { Todo } from '../interface/todo';
-import { GetTodosActions, GetTodoActions } from './actions';
-import { GetTodoActionTypes, GetTodosActionTypes } from './types';
+import {
+  GetTodosActions,
+  GetTodoActions,
+  CreateTodoActions,
+  DeleteTodoActions,
+  UpdateTodoActions,
+} from './actions';
+import {
+  GetTodoActionTypes,
+  GetTodosActionTypes,
+  CreateTodoActionTypes,
+  DeleteTodoActionTypes,
+  UpdateTodoActionTypes,
+} from './types';
 
-type Action = GetTodosActions | GetTodoActions;
+type Action =
+  | GetTodosActions
+  | GetTodoActions
+  | CreateTodoActions
+  | DeleteTodoActions
+  | UpdateTodoActions;
 
 interface State {
   loading: boolean;
@@ -18,8 +35,10 @@ interface State {
 interface InitialSate extends State {
   getTodos?: () => Promise<void>;
   getTodo?: (id: string) => Promise<void>;
-  dispatch?: React.Dispatch<Action>
-
+  dispatch?: React.Dispatch<Action>;
+  createTodo?: (todoData: Partial<Todo>) => Promise<void>;
+  deleteTodo?: (id: string) => Promise<void>;
+  updateTodo?: (id: string, todoData: Partial<Todo>) => Promise<void>;
 }
 
 const initialState: InitialSate = {
@@ -35,6 +54,9 @@ const reducer: React.Reducer<InitialSate, Action> = (
   switch (action.type) {
     case GetTodosActionTypes.GET_TODOS_REQUEST:
     case GetTodoActionTypes.GET_TODO_REQUEST:
+    case CreateTodoActionTypes.CREATE_TODO_REQUEST:
+    case DeleteTodoActionTypes.DELETE_TODO_REQUEST:
+    case UpdateTodoActionTypes.UPDATE_TODO_REQUEST:
       return {
         ...state,
         loading: true,
@@ -44,10 +66,12 @@ const reducer: React.Reducer<InitialSate, Action> = (
         ...state,
         loading: false,
         todos: action.payload,
-        success: true,
       };
     case GetTodosActionTypes.GET_TODOS_FAIL:
     case GetTodoActionTypes.GET_TODO_FAIL:
+    case CreateTodoActionTypes.CREATE_TODO_FAIL:
+    case DeleteTodoActionTypes.DELETE_TODO_FAIL:
+    case UpdateTodoActionTypes.UPDATE_TODO_FAIL:
       return {
         ...state,
         loading: false,
@@ -59,8 +83,27 @@ const reducer: React.Reducer<InitialSate, Action> = (
         loading: false,
         todo: action.payload,
       };
+    case CreateTodoActionTypes.CREATE_TODO_SUCCESS:
+      return {
+        ...state,
+        loading: false,
+        success: true,
+      };
+    case DeleteTodoActionTypes.DELETE_TODO_SUCCESS:
+      return {
+        ...state,
+        todos: state.todos.filter(todo => todo.id !== action.payload),
+      };
+    case UpdateTodoActionTypes.UPDATE_TODO_SUCCESS:
+      return {
+        ...state,
+        success: true,
+      };
     case GetTodosActionTypes.GET_TODOS_RESET:
     case GetTodoActionTypes.GET_TODO_RESET:
+    case CreateTodoActionTypes.CREATE_TODO_RESET:
+    case DeleteTodoActionTypes.DELETE_TODO_RESET:
+    case UpdateTodoActionTypes.UPDATE_TODO_RESET:
       return initialState;
     default:
       return state;
@@ -102,13 +145,72 @@ const TodoState = ({ children }) => {
     }
   };
 
+  const createTodo = async (todoData: Partial<Todo>) => {
+    dispatch({ type: CreateTodoActionTypes.CREATE_TODO_REQUEST });
+
+    try {
+      const { data } = await axios.post<Todo>(
+        'http://localhost:5000/todos',
+        todoData,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        } as AxiosRequestConfig
+      );
+
+      dispatch({
+        type: CreateTodoActionTypes.CREATE_TODO_SUCCESS,
+        payload: data,
+      });
+    } catch (err) {
+      dispatch({
+        type: CreateTodoActionTypes.CREATE_TODO_FAIL,
+        payload: { message: 'Something went wrong' },
+      });
+    }
+  };
+
+  const deleteTodo = async (id: string) => {
+    dispatch({ type: DeleteTodoActionTypes.DELETE_TODO_REQUEST });
+    try {
+      await axios.delete(`http://localhost:5000/todos/${id}`);
+
+      dispatch({
+        type: DeleteTodoActionTypes.DELETE_TODO_SUCCESS,
+        payload: id,
+      });
+    } catch (err) {
+      dispatch({
+        type: DeleteTodoActionTypes.DELETE_TODO_FAIL,
+        payload: { message: 'Something went wrong' },
+      });
+    }
+  };
+
+  const updateTodo = async (id: string, todoData: Partial<Todo>) => {
+    dispatch({ type: UpdateTodoActionTypes.UPDATE_TODO_REQUEST });
+    try {
+      await axios.put(`http://localhost:5000/todos/${id}`, todoData);
+      dispatch({ type: UpdateTodoActionTypes.UPDATE_TODO_SUCCESS });
+    } catch (err) {
+      dispatch({
+        type: UpdateTodoActionTypes.UPDATE_TODO_FAIL,
+        payload: { message: 'Something went wrong' },
+      });
+    }
+  };
+
   return (
     <TodoContext.Provider
       value={{
         ...state,
         getTodos,
         getTodo,
-        dispatch
+        dispatch,
+        createTodo,
+        deleteTodo,
+        updateTodo,
       }}
     >
       {children}

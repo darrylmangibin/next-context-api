@@ -9,6 +9,10 @@ import { GetTodosActionTypes } from '../../context/types';
 const TodosPage: NextPage = () => {
   const context = useContext(TodoContext);
 
+  const onDelete = (id: string) => {
+    context.deleteTodo(id);
+  };
+
   useEffect(() => {
     context.getTodos();
 
@@ -22,7 +26,7 @@ const TodosPage: NextPage = () => {
       <h3>List of todos</h3>
       <ul>
         {context.todos.map(todo => (
-          <TodoItem key={todo.id} todo={todo} />
+          <TodoItem key={todo.id} todo={todo} onDelete={onDelete} />
         ))}
       </ul>
       {context.loading && <p>Loading...</p>}

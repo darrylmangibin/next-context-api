@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 
 import { TodoContext } from '../../../context/TodoState';
+import { GetTodoActionTypes } from '../../../context/types';
 
 const TodoDetailsPage: NextPage = () => {
   const context = useContext(TodoContext);
@@ -14,6 +15,10 @@ const TodoDetailsPage: NextPage = () => {
     if (router.query.id) {
       context.getTodo(router.query.id as string);
     }
+
+    return () => {
+      context.dispatch({ type: GetTodoActionTypes.GET_TODO_RESET });
+    };
   }, [router.query.id]);
 
   return (

@@ -1,13 +1,14 @@
 import React from 'react';
 import Link from 'next/link';
 
-import {Todo  } from '../../interface/todo';
+import { Todo } from '../../interface/todo';
 
 interface TodoItemProps {
-  todo: Todo
+  todo: Todo;
+  onDelete?: (id: string) => Promise<void> | void;
 }
 
-const TodoItem: React.FC<TodoItemProps> = ({ todo }) => {
+const TodoItem: React.FC<TodoItemProps> = ({ todo, onDelete }) => {
   return (
     <li>
       <Link href='/todos/[id]' as={`/todos/${todo.id}`}>
@@ -18,7 +19,7 @@ const TodoItem: React.FC<TodoItemProps> = ({ todo }) => {
           Edit
         </Link>
       </button>
-      <button>Delete</button>
+      <button onClick={() => onDelete(todo.id)}>Delete</button>
     </li>
   );
 };
